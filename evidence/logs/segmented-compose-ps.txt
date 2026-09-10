@@ -1,0 +1,4 @@
+NAME              IMAGE                COMMAND                  SERVICE    CREATED       STATUS                 PORTS
+medusa-app-test   alpine:3.20          "sleep infinity"         app-test   4 hours ago   Up 4 hours             
+medusa-postgres   postgres:15-alpine   "docker-entrypoint.s…"   postgres   4 hours ago   Up 4 hours (healthy)   5432/tcp
+medusa-redis      redis:7-alpine       "docker-entrypoint.s…"   redis      4 hours ago   Up 4 hours             6379/tcp

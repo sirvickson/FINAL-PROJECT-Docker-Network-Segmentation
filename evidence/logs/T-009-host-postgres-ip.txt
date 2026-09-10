@@ -1,0 +1,16 @@
+WARNING: TCP connect to (172.19.0.3 : 5432) failed
+WARNING: Ping to 172.19.0.3 failed with status: 
+DestinationHostUnreachable
+
+
+ComputerName           : 172.19.0.3
+RemoteAddress          : 172.19.0.3
+RemotePort             : 5432
+InterfaceAlias         : WiFi
+SourceAddress          : 192.168.100.58
+PingSucceeded          : False
+PingReplyDetails (RTT) : 0 ms
+TcpTestSucceeded       : False
+
+
+

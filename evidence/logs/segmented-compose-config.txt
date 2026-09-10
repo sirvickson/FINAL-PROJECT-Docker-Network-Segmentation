@@ -1,0 +1,51 @@
+name: week1
+services:
+  app-test:
+    command:
+      - sleep
+      - infinity
+    container_name: medusa-app-test
+    image: alpine:3.20
+    networks:
+      medusa-net: null
+  postgres:
+    container_name: medusa-postgres
+    environment:
+      POSTGRES_DB: medusa-store
+      POSTGRES_PASSWORD: [REDACTED]
+      POSTGRES_USER: postgres
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -U postgres
+      timeout: 5s
+      interval: 5s
+      retries: 10
+    image: postgres:15-alpine
+    networks:
+      medusa-net: null
+    volumes:
+      - type: volume
+        source: postgres-data
+        target: /var/lib/postgresql/data
+        volume: {}
+  redis:
+    container_name: medusa-redis
+    image: redis:7-alpine
+    networks:
+      medusa-net: null
+    volumes:
+      - type: volume
+        source: redis-data
+        target: /data
+        volume: {}
+networks:
+  medusa-net:
+    name: week1_medusa-net
+    driver: bridge
+    internal: true
+volumes:
+  postgres-data:
+    name: week1_postgres-data
+  redis-data:
+    name: week1_redis-data

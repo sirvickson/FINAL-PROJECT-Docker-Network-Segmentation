@@ -1,0 +1,16 @@
+WARNING: TCP connect to (172.19.0.2 : 6379) failed
+WARNING: Ping to 172.19.0.2 failed with status: 
+DestinationHostUnreachable
+
+
+ComputerName           : 172.19.0.2
+RemoteAddress          : 172.19.0.2
+RemotePort             : 6379
+InterfaceAlias         : WiFi
+SourceAddress          : 192.168.100.58
+PingSucceeded          : False
+PingReplyDetails (RTT) : 0 ms
+TcpTestSucceeded       : False
+
+
+

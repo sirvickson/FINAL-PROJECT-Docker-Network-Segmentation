@@ -1,227 +1,164 @@
-# Weekend Recon: Node Base Image Security Scan
+# Docker Network Segmentation as a Control Against Unauthorized Host-to-Database Access
 
 ## Project Overview
 
-This project demonstrates a proactive **DevSecOps** security assessment of the official **Node.js 18 Alpine** Docker image before deploying a Medusa headless e-commerce backend.
+This project investigates whether Docker network segmentation can reduce unauthorized host-to-database connectivity while preserving legitimate application-container access to database services.
 
-The objective is to identify known vulnerabilities in the base image using **Trivy** and document the findings before the application reaches production.
+The investigation uses a controlled, learner-authorized Docker environment containing:
 
----
+- PostgreSQL
+- Redis
+- An Alpine-based application test container
+- A Docker bridge network
 
-## Objectives
+The experiment compares connectivity before and after segmentation. The baseline configuration publishes PostgreSQL and Redis ports to the Windows host. The segmented configuration removes host port publishing and configures the Docker network as internal.
 
-- Pull the official `node:18-alpine` Docker image.
-- Perform a vulnerability scan using Trivy.
-- Analyze the scan results.
-- Prioritize the most critical vulnerabilities.
-- Document mitigation recommendations.
-- Practice integrating security into the Software Development Life Cycle (SDLC).
+The project uses connectivity tests, Docker configuration output, network inspection, command output, and evidence logs to evaluate the security control.
 
 ---
 
-## Technologies Used
+## Research Question
 
-- Docker
-- Trivy
-- Alpine Linux
-- Node.js 18
-- Git
-- GitHub
-- Markdown
+> Does configuring PostgreSQL and Redis on an internal Docker network prevent direct host-to-database connectivity while preserving application-container connectivity to those services in the authorized Docker environment?
 
 ---
 
-## Project Structure
+## Hypothesis
 
-```
-.
-├── README.md
-├── security_report.md
-├── weekend_recon.png
-└── trivy-node18-alpine.json
-```
+If PostgreSQL and Redis are placed on an internal Docker network without host port exposure, then host-originated connectivity tests to their service ports will fail while application-container connectivity tests to PostgreSQL and Redis will succeed.
+
+The expected security benefit is that database services remain reachable by the application container while direct connectivity from the Windows host is restricted.
 
 ---
 
-## Pull the Target Image
+## Scope
 
-```bash
-docker pull node:18-alpine
-```
+This project is limited to the authorized Docker environment used for the investigation.
 
----
+The investigation includes:
 
-## Run the Vulnerability Scan
+- Docker Compose configuration
+- PostgreSQL connectivity
+- Redis connectivity
+- Application-container connectivity
+- Windows host connectivity
+- Docker network configuration
+- Docker container and network inspection
+- Connectivity test results
+- Logs and screenshots used as evidence
 
-```bash
-docker run --rm \
--v /var/run/docker.sock:/var/run/docker.sock \
-aquasec/trivy image node:18-alpine
-```
+The investigation does not include:
 
-To export the scan results as JSON:
-
-```bash
-docker run --rm \
--v /var/run/docker.sock:/var/run/docker.sock \
--v $(pwd):/output \
-aquasec/trivy image \
---format json \
--o /output/trivy-node18-alpine.json \
-node:18-alpine
-```
+- Production systems
+- Unauthorized networks
+- Real customer or personal data
+- Real production credentials
+- Destructive testing
+- Exploitation of external systems
+- Attempts to bypass security controls outside the authorized environment
 
 ---
 
-## Scan Summary
+## Environment
 
-**Target Image**
+### Host Environment
 
-- node:18-alpine
+- Operating system: Windows
+- Docker Desktop
+- Docker Engine
+- Docker Compose
+- Docker Desktop Linux container environment
 
-**Operating System**
+### Containers
 
-- Alpine Linux 3.21.3
+| Container | Image | Purpose |
+|---|---|---|
+| `medusa-postgres` | `postgres:15-alpine` | PostgreSQL database service |
+| `medusa-redis` | `redis:7-alpine` | Redis service |
+| `medusa-app-test` | `alpine:3.20` | Controlled application-side connectivity test client |
 
-**Node Version**
+The `medusa-app-test` container is a controlled test client. It represents an application-side network participant and is not claimed to be the production Medusa application.
 
-- 18.20.8
+### Docker Network
 
-**Scanner**
+Network:
 
-- Trivy v0.72.0
+```text
+week1_medusa-net
+```
 
-The scan detected several vulnerabilities affecting packages installed within the container image. The most significant findings were related to the OpenSSL (`libcrypto3`) package.
+Network configuration:
+
+- Baseline: Docker bridge network with host port publishing.
+- Segmented: Docker bridge network configured as `internal: true`.
+- PostgreSQL: TCP 5432.
+- Redis: TCP 6379.
 
 ---
 
-# Top Vulnerabilities
+## Security Control
 
-## 1. CVE-2026-31789 (CRITICAL)
+The implemented control combines two configuration changes:
 
-**Package**
+1. PostgreSQL and Redis no longer publish ports to the Windows host.
+2. The Docker bridge network is configured as an internal network.
 
-```
-libcrypto3 (OpenSSL)
-```
+This configuration is intended to prevent direct host-originated access to the database service ports while preserving connectivity between containers attached to the network.
 
-**Installed Version**
-
-```
-3.3.3-r0
-```
-
-**Fixed Version**
-
-```
-3.3.7-r0
-```
-
-### Description
-
-This vulnerability affects OpenSSL and may allow a specially crafted X.509 certificate to trigger a memory corruption issue.
-
-### Potential Impact
-
-An attacker could potentially:
-
-- Crash the application (Denial of Service)
-- Execute malicious code under certain conditions
-
-### Recommendation
-
-Upgrade the OpenSSL package by using an updated Node Alpine image or upgrading Alpine packages to version **3.3.7-r0** or later.
+Because both changes were applied together, the experiment evaluates the segmented configuration as a combined control rather than attributing the result to `internal: true` alone.
 
 ---
 
-## 2. CVE-2025-15467 (HIGH)
+## Test Plan
 
-**Package**
-
-```
-libcrypto3 (OpenSSL)
-```
-
-**Installed Version
-
-```
-3.3.3-r0
-```
-
-**Fixed Version**
-
-```
-3.3.6-r0
-```
-
-### Description
-
-This vulnerability affects the processing of encrypted CMS (Cryptographic Message Syntax) messages.
-
-### Potential Impact
-
-A maliciously crafted encrypted message could:
-
-- Crash the application
-- Potentially lead to remote code execution
-
-### Recommendation
-
-Upgrade OpenSSL to **3.3.6-r0** or later before deploying the application.
+| Test ID | Connectivity Path | Expected Result |
+|---|---|---|
+| T-001 | Windows host -> PostgreSQL | Allowed before segmentation |
+| T-002 | Windows host -> Redis | Allowed before segmentation |
+| T-003 | `medusa-app-test` -> PostgreSQL | Allowed |
+| T-004 | `medusa-app-test` -> Redis | Allowed |
+| T-005 | Windows host -> PostgreSQL | Blocked after segmentation |
+| T-006 | Windows host -> Redis | Blocked after segmentation |
+| T-007 | `medusa-app-test` -> PostgreSQL | Allowed after segmentation |
+| T-008 | `medusa-app-test` -> Redis | Allowed after segmentation |
+| T-009 | Windows host -> PostgreSQL container IP | Blocked in tested host path |
+| T-010 | Windows host -> Redis container IP | Blocked in tested host path |
 
 ---
 
-# Why These Vulnerabilities Matter
+## Evidence
 
-The Medusa backend will be Internet-facing and will rely heavily on secure HTTPS communication. Since both vulnerabilities affect OpenSSL, they pose a greater security risk than the lower-severity BusyBox vulnerabilities identified in the scan.
+Evidence is stored in the `evidence/` directory.
 
-Updating the vulnerable packages before deployment significantly reduces the application's attack surface.
+- `evidence-index.md` maps evidence IDs to files and tests.
+- `tests/test-matrix.md` contains the complete test matrix.
+- `evidence/logs/` contains command and connectivity output.
+- `evidence/` contains supporting screenshots.
 
----
-
-# Mitigation Steps
-
-- Pull the latest Node Alpine base image.
-- Upgrade Alpine packages.
-- Rebuild the Docker image.
-- Re-run Trivy to verify remediation.
-- Continue vulnerability scanning during the CI/CD pipeline.
+No passwords, tokens, private keys, or real customer data should be included in the repository.
 
 ---
 
-# AI Prompt Used
+## Repository Structure
 
-> I am preparing to deploy an e-commerce backend on the node:18-alpine Docker image. Analyze these Trivy scan results. Identify the top 2 vulnerabilities (CVEs) I need to be aware of, and explain in simple terms how an attacker might exploit them.
+```text
+week1/
+|-- README.md
+|-- capstone-proposal.md
+|-- docker-compose.yml
+|-- docker-compose.baseline.yml
+|-- environment.md
+|-- analysis/
+|   `-- analysis.md
+|-- diagrams/
+|   |-- Baseline_architecture.png
+|   `-- Segmented_architecture.png
+|-- evidence/
+|   |-- evidence-index.md
+|   |-- logs/
+|   |-- screenshots/
+|   `-- redacted-data/
+`-- tests/
+    `-- test-matrix.md
 
----
 
-# AI Analysis Summary
-
-The scan identified two high-priority OpenSSL vulnerabilities:
-
-- **CVE-2026-31789 (Critical)** – Heap buffer overflow that may result in denial of service or potential remote code execution.
-- **CVE-2025-15467 (High)** – Stack buffer overflow during CMS message parsing that could allow denial of service or remote code execution.
-
-Both vulnerabilities were found in the `libcrypto3` package and have available fixes.
-
----
-
-# Verification Checklist
-
-- [x] Pulled `node:18-alpine`
-- [x] Executed Trivy vulnerability scan
-- [x] Exported scan results to JSON
-- [x] Reviewed identified CVEs
-- [x] Prioritized highest-risk vulnerabilities
-- [x] Documented findings
-- [x] Captured scan screenshot (`weekend_recon.png`)
-
----
-
-# Git Commands
-
-```bash
-git status
-git add .
-git commit -m "Weekend Recon: Node Base Image Scanned"
-git push origin main

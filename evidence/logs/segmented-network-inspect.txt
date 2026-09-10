@@ -1,0 +1,71 @@
+[
+    {
+        "Name": "week1_medusa-net",
+        "Id": "e7bb173b2082d3687f4e277497034b1505584035ddbd02bef4661dcfab2bb190",
+        "Created": "2026-09-09T12:11:07.00764241Z",
+        "Scope": "local",
+        "Driver": "bridge",
+        "EnableIPv4": true,
+        "EnableIPv6": false,
+        "IPAM": {
+            "Driver": "default",
+            "Options": null,
+            "Config": [
+                {
+                    "Subnet": "172.19.0.0/16",
+                    "Gateway": "172.19.0.1"
+                }
+            ]
+        },
+        "Internal": true,
+        "Attachable": false,
+        "Ingress": false,
+        "ConfigFrom": {
+            "Network": ""
+        },
+        "ConfigOnly": false,
+        "Options": {
+            "com.docker.network.enable_ipv4": "true",
+            "com.docker.network.enable_ipv6": "false"
+        },
+        "Labels": {
+            "com.docker.compose.config-hash": "37672540d73f2cc4ddad3a00031219d77d741d4aece5deb09635891afd1742e7",
+            "com.docker.compose.network": "medusa-net",
+            "com.docker.compose.project": "week1",
+            "com.docker.compose.version": "5.3.1"
+        },
+        "Containers": {
+            "0cb0e99e34ac15af3e8355b798dee9459565cfa26e057105cf6d441dc49f748e": {
+                "Name": "medusa-redis",
+                "EndpointID": "6b1e777b6e26122e763d03d9b9b02b71974fe7334f370dee2ca05fdd385ec8a8",
+                "MacAddress": "16:c6:64:12:a8:ff",
+                "IPv4Address": "172.19.0.2/16",
+                "IPv6Address": ""
+            },
+            "3e0a5b84f02ebc6e946e297eb4389d30ed7fc5a6dc46772582102970bab9aa89": {
+                "Name": "medusa-postgres",
+                "EndpointID": "f63163e573893e29fe2462e10bff3dad4ea4fcb0b5da19095626ca91ddf1bcd7",
+                "MacAddress": "c6:92:df:1c:1b:1f",
+                "IPv4Address": "172.19.0.3/16",
+                "IPv6Address": ""
+            },
+            "c4539ae6bc04d138c9c46ad9547bab8d5a6ba8afe2e478a3662c70fd17657e6f": {
+                "Name": "medusa-app-test",
+                "EndpointID": "d514306ebe40f9ffb1548c649951f2e797e109d6730beed830e0f0b2f207d565",
+                "MacAddress": "2e:b8:00:4d:1c:a5",
+                "IPv4Address": "172.19.0.4/16",
+                "IPv6Address": ""
+            }
+        },
+        "Status": {
+            "IPAM": {
+                "Subnets": {
+                    "172.19.0.0/16": {
+                        "IPsInUse": 6,
+                        "DynamicIPsAvailable": 65530
+                    }
+                }
+            }
+        }
+    }
+]
